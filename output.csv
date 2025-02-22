@@ -1,2 +1,0 @@
-id,date_time,pair,direction,account_balance,risk_percent,spread,entry,pivot,entry_price,stop_loss,lot_size,tp_1,tp_2,tp1_profit,tp2_profit,risk_amount
-3a043b96-1559-4b42-bb5b-ee4f9856c117,2025-02-22 19:54:10,usd_jpy,SELL,1000.00,1.00,15.00,152.37900,152.83800,152.36400,152.85800,0.03,151.87000,150.88200,9.95,29.84,10.00
