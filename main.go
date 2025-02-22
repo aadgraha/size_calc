@@ -151,6 +151,7 @@ func pipRatio(pair string) float64 {
 	case "usd_jpy":
 		return 1.49
 	}
+	// todo add more pip ratio for other pairs for precice calculation
 	return 1
 }
 
