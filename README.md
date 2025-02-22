@@ -1,4 +1,5 @@
 Simple FX size calculator based on price action strategy
+(SEE in raw mode for correct format.)
 
 entry and pivot is the area of suppy or demand.
 TP1 is 1:1 RR ratio.
