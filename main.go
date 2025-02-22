@@ -118,7 +118,9 @@ func printTable(trades []Trade) {
 	red := color.New(color.FgRed).SprintFunc()
 	blue := color.New(color.FgHiBlue).SprintFunc()
 	yellow := color.New(color.FgHiYellow).SprintFunc()
-	t.SetHeaders("ID", "DateTime", "Pair", "Direction", "AccBalance", "Risk%", "Spread", "Entry", "Pivot", "EntryPrice", "SL", "LotSize", "TP1", "TP2", "$TP1", "$TP2", "$SL")
+	t.SetHeaders(
+		"ID", "DateTime", "Pair", "Direction", "AccBalance", "Risk%", "Spread", "Entry", "Pivot",
+		"EntryPrice", "SL", "LotSize", "TP1", "TP2", "$TP1", "$TP2", "$SL")
 
 	for _, trade := range trades {
 		t.AddRow(
