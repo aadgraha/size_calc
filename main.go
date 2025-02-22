@@ -151,3 +151,5 @@ func pipRatio(pair string) float64 {
 	}
 	return 1
 }
+
+//todo make rest api out of this, with svelte front end
