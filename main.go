@@ -33,6 +33,8 @@ type Trade struct {
 	TP1Profit      float64
 	TP2Profit      float64
 	RiskAmount     float64
+	//for calculation not for output
+	Magnitude int
 }
 
 func main() {
@@ -78,6 +80,8 @@ func processRecord(record []string) Trade {
 	trade.Spread, _ = strconv.ParseFloat(record[3], 64)
 	trade.Entry, _ = strconv.ParseFloat(record[4], 64)
 	trade.Pivot, _ = strconv.ParseFloat(record[5], 64)
+	trade.Magnitude = int(math.Round(math.Pow(10, float64(magnitudeCalculation(record[4])))))
+	magnitude := float64(trade.Magnitude)
 
 	// Determine direction
 	if trade.Entry > trade.Pivot {
@@ -86,8 +90,6 @@ func processRecord(record []string) Trade {
 		trade.Direction = "SELL"
 	}
 
-	pointCount := float64(magnitudeCalculation(trade.Entry))
-	magnitude := math.Pow(10, pointCount)
 	if trade.Direction == "BUY" {
 		trade.EntryPrice = trade.Entry + (trade.Spread / magnitude)
 		trade.StopLoss = trade.Pivot - (trade.Spread / magnitude) - (5 / magnitude)
@@ -98,11 +100,7 @@ func processRecord(record []string) Trade {
 
 	pointDistance := (math.Abs(trade.EntryPrice - trade.StopLoss))
 	trade.RiskAmount = trade.RiskPercent / 100 * trade.AccountBalance
-	if strings.HasPrefix(trade.Pair, "usd") {
-		trade.LotSize = trade.RiskAmount / (pointDistance * magnitude / pipRatio(trade.Pair))
-	} else {
-		trade.LotSize = trade.RiskAmount / (pointDistance / trade.StopLoss * magnitude)
-	}
+	trade.LotSize = trade.RiskAmount / (pointDistance * magnitude / pipRatio(trade.Pair))
 	trade.LotSize = math.Floor(trade.LotSize*100) / 100
 	trade.RiskAmount = trade.LotSize * pointDistance * magnitude / pipRatio(trade.Pair)
 	trade.TP1 = trade.EntryPrice + (trade.EntryPrice - trade.StopLoss)
@@ -137,9 +135,8 @@ func printTable(trades []Trade) {
 	t.Render()
 }
 
-func magnitudeCalculation(num float64) int {
-	str := strconv.FormatFloat(num, 'f', -1, 64)
-	parts := strings.Split(str, ".")
+func magnitudeCalculation(num string) int {
+	parts := strings.Split(num, ".")
 	if len(parts) < 2 {
 		return 0
 	}
@@ -148,10 +145,66 @@ func magnitudeCalculation(num float64) int {
 
 func pipRatio(pair string) float64 {
 	switch pair {
+	case "aud_cad":
+		return 1
+	case "aud_chf":
+		return 1
+	case "aud_jpy":
+		return 1
+	case "aud_nzd":
+		return 1
+	case "aud_usd":
+		return 1
+	case "cad_chf":
+		return 1
+	case "cad_jpy":
+		return 1
+	case "chf_jpy":
+		return 1
+	case "eur_aud":
+		return 1
+	case "eur_cad":
+		return 1
+	case "eur_chf":
+		return 1
+	case "eur_gbp":
+		return 1
+	case "eur_jpy":
+		return 1
+	case "eur_nzd":
+		return 1
+	case "eur_usd":
+		return 1
+	case "gbp_aud":
+		return 1
+	case "gbp_cad":
+		return 1
+	case "gbp_chf":
+		return 1
+	case "gbp_jpy":
+		return 1.49
+	case "gbp_nzd":
+		return 1
+	case "gbp_usd":
+		return 1
+	case "nzd_cad":
+		return 1
+	case "nzd_chf":
+		return 1
+	case "nzd_jpy":
+		return 1
+	case "nzd_usd":
+		return 1
+	case "usd_cad":
+		return 1
+	case "usd_chf":
+		return 1
 	case "usd_jpy":
 		return 1.49
+	case "xau_usd":
+		return 1
 	}
-	// todo add more pip ratio for other pairs for precice calculation
+
 	return 1
 }
 
