@@ -150,7 +150,7 @@ func pipRatio(pair string) float64 {
 	case "aud_chf":
 		return 1
 	case "aud_jpy":
-		return 1
+		return 1.49
 	case "aud_nzd":
 		return 1
 	case "aud_usd":
@@ -160,13 +160,13 @@ func pipRatio(pair string) float64 {
 	case "cad_jpy":
 		return 1
 	case "chf_jpy":
-		return 1
+		return 1.49
 	case "eur_aud":
 		return 1
 	case "eur_cad":
 		return 1
 	case "eur_chf":
-		return 1
+		return 0.9
 	case "eur_gbp":
 		return 1
 	case "eur_jpy":
