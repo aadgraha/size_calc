@@ -62,6 +62,7 @@ func readCSV(filePath string) ([][]string, error) {
 	defer file.Close()
 
 	reader := csv.NewReader(file)
+	reader.Comment = '#'
 	records, err := reader.ReadAll()
 	if err != nil {
 		return nil, err
