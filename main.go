@@ -33,8 +33,11 @@ type Trade struct {
 	TP1Profit      float64
 	TP2Profit      float64
 	RiskAmount     float64
+	TradeValue     float64
 	//for calculation not for output
-	Magnitude int
+	Magnitude   int
+	TP1Inserted bool
+	TP2Inserted bool
 }
 
 func main() {
@@ -73,6 +76,16 @@ func readCSV(filePath string) ([][]string, error) {
 
 func processRecord(record []string) Trade {
 	var trade Trade
+	trade.TP1Inserted = true
+	trade.TP2Inserted = true
+	isTP1, err := strconv.ParseBool(record[6])
+	if err != nil {
+		trade.TP1Inserted = false
+	}
+	isTP2, err := strconv.ParseBool(record[7])
+	if err != nil {
+		trade.TP2Inserted = false
+	}
 	trade.ID = uuid.New().String()
 	trade.DateTime = time.Now().Format("2006-01-02 15:04:05")
 	trade.Pair = record[0]
@@ -108,6 +121,7 @@ func processRecord(record []string) Trade {
 	trade.TP2 = trade.EntryPrice + 3*(trade.EntryPrice-trade.StopLoss)
 	trade.TP1Profit = trade.LotSize * (math.Abs(trade.TP1-trade.EntryPrice) * magnitude / pipRatio(trade.Pair))
 	trade.TP2Profit = trade.LotSize * (math.Abs(trade.TP2-trade.EntryPrice) * magnitude / pipRatio(trade.Pair))
+	trade.TradeValue = tradeValue(&trade, isTP1, isTP2)
 	return trade
 }
 
@@ -119,7 +133,7 @@ func printTable(trades []Trade) {
 	yellow := color.New(color.FgHiYellow).SprintFunc()
 	t.SetHeaders(
 		"ID", "DateTime", "Pair", "Direction", "AccBalance", "Risk%", "Spread", "Entry", "Pivot",
-		"EntryPrice", "SL", "LotSize", "TP1", "TP2", "$TP1", "$TP2", "$SL")
+		"EntryPrice", "SL", "LotSize", "TP1", "TP2", "$TP1", "$TP2", "$SL", "$Value")
 
 	for _, trade := range trades {
 		t.AddRow(
@@ -130,7 +144,7 @@ func printTable(trades []Trade) {
 			red(fmt.Sprintf("%.5f", trade.StopLoss)), yellow(fmt.Sprintf("%.2f", trade.LotSize)),
 			green(fmt.Sprintf("%.5f", trade.TP1)), green(fmt.Sprintf("%.5f", trade.TP2)),
 			fmt.Sprintf("%.2f", trade.TP1Profit), fmt.Sprintf("%.2f", trade.TP2Profit),
-			fmt.Sprintf("%.2f", trade.RiskAmount*-1),
+			fmt.Sprintf("%.2f", trade.RiskAmount*-1), fmt.Sprintf("%.2f", trade.TradeValue),
 		)
 	}
 	t.Render()
@@ -142,6 +156,24 @@ func magnitudeCalculation(num string) int {
 		return 0
 	}
 	return len(parts[1])
+}
+
+func tradeValue(trade *Trade, isTP1, isTP2 bool) float64 {
+	if !trade.TP1Inserted || !trade.TP2Inserted {
+		return math.NaN()
+	}
+	if (trade.TP1Inserted && isTP1) && (trade.TP2Inserted && isTP2) {
+		return trade.TP1Profit + trade.TP2Profit
+	} else if (trade.TP1Inserted && isTP1) && (trade.TP2Inserted && !isTP2) {
+		return trade.TP1Profit + (trade.RiskAmount * -1)
+	} else if (trade.TP1Inserted && !isTP1) && (trade.TP2Inserted && isTP2) {
+		return trade.RiskAmount + (trade.TP2Profit * -1)
+	} else if (trade.TP1Inserted && !isTP1) && (trade.TP2Inserted && !isTP2) {
+		return (trade.RiskAmount * -1) * 2
+	} else {
+		return 0
+	}
+
 }
 
 func pipRatio(pair string) float64 {
@@ -208,5 +240,3 @@ func pipRatio(pair string) float64 {
 
 	return 1
 }
-
-//todo make rest api out of this, with svelte front end
