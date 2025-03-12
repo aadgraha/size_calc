@@ -105,11 +105,11 @@ func processRecord(record []string) Trade {
 	}
 
 	if trade.Direction == "BUY" {
-		trade.EntryPrice = trade.Entry + (trade.Spread / magnitude)
-		trade.StopLoss = trade.Pivot - (trade.Spread / magnitude) - (5 / magnitude)
+		trade.EntryPrice = trade.Entry
+		trade.StopLoss = trade.Pivot - (trade.Spread / magnitude) - (50 / magnitude)
 	} else {
-		trade.EntryPrice = trade.Entry - (trade.Spread / magnitude)
-		trade.StopLoss = trade.Pivot + (trade.Spread / magnitude) + (5 / magnitude)
+		trade.EntryPrice = trade.Entry
+		trade.StopLoss = trade.Pivot + (trade.Spread / magnitude) + (50 / magnitude)
 	}
 
 	pointDistance := (math.Abs(trade.EntryPrice - trade.StopLoss))
