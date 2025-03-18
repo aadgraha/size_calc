@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -16,31 +18,38 @@ import (
 )
 
 type Trade struct {
-	ID             string
-	DateTime       string
-	Pair           string
-	Direction      string
-	AccountBalance float64
-	RiskPercent    float64
-	Spread         float64
-	Entry          float64
-	Pivot          float64
-	EntryPrice     float64
-	StopLoss       float64
-	LotSize        float64
-	TP1            float64
-	TP2            float64
-	TP1Profit      float64
-	TP2Profit      float64
-	RiskAmount     float64
-	TradeValue     float64
+	ID             string  `json:"id"`
+	DateTime       string  `json:"datetime"`
+	Pair           string  `json:"pair"`
+	Direction      string  `json:"direction"`
+	AccountBalance float64 `json:"account_balance"`
+	RiskPercent    float64 `json:"risk_percent"`
+	Spread         float64 `json:"spread"`
+	Entry          float64 `json:"entry"`
+	Pivot          float64 `json:"pivot"`
+	EntryPrice     float64 `json:"entry_price"`
+	StopLoss       float64 `json:"stop_loss"`
+	LotSize        float64 `json:"lot_size"`
+	TP1            float64 `json:"tp1"`
+	TP2            float64 `json:"tp2"`
+	TP1Profit      float64 `json:"tp1_profit"`
+	TP2Profit      float64 `json:"tp2_profit"`
+	RiskAmount     float64 `json:"risk_amount"`
+	TradeValue     float64 `json:"trade_value"`
 	//for calculation not for output
-	Magnitude   int
-	TP1Inserted bool
-	TP2Inserted bool
+	Magnitude   int  `json:"magnitude"`
+	TP1Inserted bool `json:"tp1_inserted"`
+	TP2Inserted bool `json:"tp2_inserted"`
 }
 
 func main() {
+	http.HandleFunc("/trades", tradesHandler)
+	log.Println("Server started on :8081")
+	log.Fatal(http.ListenAndServe(":8081", nil))
+}
+
+func tradesHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	records, err := readCSV("input.csv")
 	if err != nil {
 		log.Fatalf("Could not read input CSV: %s", err)
@@ -54,7 +63,9 @@ func main() {
 		trade := processRecord(record)
 		trades = append(trades, trade)
 	}
-	printTable(trades)
+	json := json.NewEncoder(w).Encode(trades)
+	log.Fatal(json)
+
 }
 
 func readCSV(filePath string) ([][]string, error) {
@@ -160,7 +171,7 @@ func magnitudeCalculation(num string) int {
 
 func tradeValue(trade *Trade, isTP1, isTP2 bool) float64 {
 	if !trade.TP1Inserted || !trade.TP2Inserted {
-		return math.NaN()
+		return 0
 	}
 	if (trade.TP1Inserted && isTP1) && (trade.TP2Inserted && isTP2) {
 		return trade.TP1Profit + trade.TP2Profit
