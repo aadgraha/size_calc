@@ -48,7 +48,14 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8081", nil))
 }
 
+func enableCORS(w http.ResponseWriter) {
+	w.Header().Set("Access-Control-Allow-Origin", "*") // Allow all origins
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+}
+
 func tradesHandler(w http.ResponseWriter, r *http.Request) {
+	enableCORS(w)
 	w.Header().Set("Content-Type", "application/json")
 	records, err := readCSV("input.csv")
 	if err != nil {
@@ -63,8 +70,12 @@ func tradesHandler(w http.ResponseWriter, r *http.Request) {
 		trade := processRecord(record)
 		trades = append(trades, trade)
 	}
-	json := json.NewEncoder(w).Encode(trades)
-	log.Fatal(json)
+
+	err = json.NewEncoder(w).Encode(trades)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 }
 
@@ -108,7 +119,6 @@ func processRecord(record []string) Trade {
 	trade.Magnitude = int(math.Round(math.Pow(10, float64(magnitudeCalculation(record[4])))))
 	magnitude := float64(trade.Magnitude)
 
-	// Determine direction
 	if trade.Entry > trade.Pivot {
 		trade.Direction = "BUY"
 	} else {
